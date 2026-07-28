@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.vite/
+coverage/
+.vercel/
+*.log
+
+.playwright-cli/
+output/
+*.tsbuildinfo
+vite.config.js
+vite.config.d.ts
