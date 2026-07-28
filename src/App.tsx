@@ -153,7 +153,7 @@ function Assessment({ answers, setAnswers, onFinish, onExit }: { answers: Answer
       </section>
       <div className="assessment__footer">
         <button className="button button--dark-quiet" disabled={index === 0} onClick={() => setIndex((current) => current - 1)}>← Voltar</button>
-        <p>Suas respostas permanecem apenas nesta tela.</p>
+        <p>Anônimo · nada é salvo · atualizar apaga o progresso · não é avaliação clínica.</p>
         <button className="button button--primary" disabled={!selected} onClick={next}>{index === questions.length - 1 ? 'Ver resultado' : 'Continuar'} <span aria-hidden="true">→</span></button>
       </div>
     </main>
@@ -265,15 +265,19 @@ export default function App() {
   const setScreen = (next: Screen) => {
     setScreenState(next)
     const path = next === 'learn' ? '/resultados' : '/'
-    if (window.location.pathname !== path) window.history.pushState({}, '', path)
+    window.history.pushState({ screen: next }, '', path)
     window.scrollTo({ top: 0, behavior: 'instant' })
   }
 
   useEffect(() => {
-    const navigate = () => setScreenState(window.location.pathname === '/resultados' ? 'learn' : 'home')
+    window.history.replaceState({ screen: route }, '', window.location.pathname)
+    const navigate = (event: PopStateEvent) => {
+      const next = event.state?.screen ?? (window.location.pathname === '/resultados' ? 'learn' : 'home')
+      setScreenState(next)
+    }
     window.addEventListener('popstate', navigate)
     return () => window.removeEventListener('popstate', navigate)
-  }, [])
+  }, [route])
 
   const reset = () => {
     if (Object.keys(answers).length > 0 && !window.confirm('Refazer a avaliação apagará todas as respostas desta sessão. Deseja continuar?')) return
@@ -288,7 +292,8 @@ export default function App() {
       {screen === 'home' && <Home onStart={() => setScreen('instructions')} onLearn={() => setScreen('learn')} />}
       {screen === 'instructions' && <Instructions onBack={() => setScreen('home')} onStart={() => setScreen('assessment')} />}
       {screen === 'result' && <Result answers={answers} onRestart={reset} onLearn={() => setScreen('learn')} />}
-      {screen === 'learn' && <Learn onBack={() => window.history.length > 1 ? window.history.back() : setScreen('home')} onStart={() => setScreen('instructions')} />}
+      {screen === 'learn' && <Learn onBack={() => setScreen(Object.keys(answers).length === questions.length ? 'result' : 'home')} onStart={() => setScreen('instructions')} />}
     </Shell>
   )
 }
+
