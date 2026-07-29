@@ -2,6 +2,7 @@
   "name": "autodiagnostico",
   "private": true,
   "version": "1.0.0",
+  "description": "Autodiagnóstico reflexivo, sem identificação solicitada ou armazenamento de respostas, sobre inteligência emocional, autorresponsabilidade e maturidade comportamental.",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -31,3 +32,4 @@
     "vitest": "latest"
   }
 }
+

@@ -41,6 +41,10 @@ function PrivacyNote({ compact = false }: { compact?: boolean }) {
   )
 }
 
+function IndependenceNote() {
+  return <p className="independence-note">Instrumento independente, elaborado para fins educativos e de reflexão. Não afiliado a autores, editoras ou metodologias comerciais.</p>
+}
+
 function Shell({ children, onHome, onLearn }: { children: React.ReactNode; onHome: () => void; onLearn?: () => void }) {
   return (
     <div className="app-shell">
@@ -66,7 +70,7 @@ function Home({ onStart, onLearn }: { onStart: () => void; onLearn: () => void }
             <button className="button button--quiet" onClick={onLearn}>Entender os resultados</button>
           </div>
           <div className="facts" aria-label="Informações da avaliação">
-            <span><b>30</b> afirmações</span><span><b>≈ 5</b> minutos</span><span><b>100%</b> anônimo</span>
+            <span><b>30</b> afirmações</span><span><b>≈ 5</b> minutos</span><span><b>0</b> dados solicitados</span>
           </div>
         </div>
         <div className="hero__visual reveal reveal--delay" aria-hidden="true">
@@ -80,7 +84,7 @@ function Home({ onStart, onLearn }: { onStart: () => void; onLearn: () => void }
       </section>
       <section className="home__lower">
         <PrivacyNote />
-        <p className="clinical-note">Ferramenta de reflexão e desenvolvimento pessoal. Não constitui avaliação clínica ou psicológica.</p>
+        <div><p className="clinical-note">Ferramenta de reflexão e desenvolvimento pessoal. Não constitui avaliação clínica ou psicológica.</p><IndependenceNote /></div>
       </section>
     </main>
   )
@@ -215,7 +219,7 @@ function Result({ answers, onRestart, onLearn }: { answers: Answers; onRestart: 
         <button className="button button--secondary" onClick={onLearn}>Entender todos os resultados</button>
         <button className="button button--quiet" onClick={onRestart}>Refazer avaliação</button>
       </section>
-      <div className="result-disclaimer"><PrivacyNote /><p>Este autodiagnóstico apoia reflexão e desenvolvimento pessoal. Não constitui avaliação clínica ou psicológica.</p></div>
+      <div className="result-disclaimer"><PrivacyNote /><div><p>Este autodiagnóstico apoia reflexão e desenvolvimento pessoal. Não constitui avaliação clínica ou psicológica.</p><IndependenceNote /></div></div>
     </main>
   )
 }
@@ -229,7 +233,7 @@ function Learn({ onBack, onStart }: { onBack: () => void; onStart: () => void })
         <button className="back-link back-link--light no-print" onClick={onBack}>← Voltar</button>
         <span className="eyebrow eyebrow--light">Guia de interpretação</span>
         <h1>Entenda todos os resultados possíveis.</h1>
-        <p>A pontuação organiza tendências em faixas para apoiar reflexão. Ela não define quem você é nem substitui uma avaliação profissional.</p>
+        <p>A pontuação organiza tendências em faixas para apoiar reflexão. Ela não define quem você é nem substitui uma avaliação profissional.</p><IndependenceNote />
       </section>
       <div className="learn-content">
         <section>

@@ -81,6 +81,7 @@ h1, h2, h3 { color: var(--navy); line-height: 1.04; }
 .privacy-note p { margin: 3px 0 0; color: var(--muted); font-size: .92rem; }
 .privacy-icon { flex: none; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; background: var(--success-bg); color: var(--success); font-weight: 800; }
 .clinical-note { margin: 0; color: var(--muted); font-size: .88rem; }
+.independence-note { margin: 8px 0 0; color: var(--muted); font-size: .78rem; }
 
 /* Instructions */
 .narrow-page { width: min(880px, calc(100% - 40px)); margin: 50px auto 100px; }
@@ -292,6 +293,4 @@ h1, h2, h3 { color: var(--navy); line-height: 1.04; }
   .result-disclaimer { margin-top: 10mm; }
   .privacy-note { padding: 4mm; }
 }
-
-
 
