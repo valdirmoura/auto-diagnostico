@@ -30,7 +30,7 @@ describe('fluxo do AutoDiagnóstico', () => {
     expect(screen.queryByText(/Como o cálculo funciona/)).not.toBeInTheDocument()
   })
 
-  it('conclui as 30 perguntas e abre metodologia em caminho opaco da sessão', () => {
+  it('conclui as 30 perguntas e mostra somente os quatro níveis no caminho opaco', () => {
     render(<App />)
     completeAssessment()
 
@@ -38,9 +38,12 @@ describe('fluxo do AutoDiagnóstico', () => {
     expect(screen.getByLabelText('90 de 150 pontos')).toBeInTheDocument()
     expect(screen.getAllByLabelText('50% do intervalo da competência')).toHaveLength(5)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Entenda todos os resultados' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Entenda sua pontuação' }))
     expect(window.location.pathname).toBe('/r/11111111-2222-4333-8444-555555555555')
-    expect(screen.getByRole('heading', { name: 'Entenda todos os resultados possíveis.' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Entenda sua pontuação geral.' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Quatro níveis de leitura' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Como ler cada competência' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Como o cálculo funciona' })).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: '← Voltar' }))
     expect(screen.getByRole('heading', { name: 'Maturidade comportamental' })).toBeInTheDocument()
   })
@@ -67,10 +70,13 @@ describe('fluxo do AutoDiagnóstico', () => {
     expect(screen.getByRole('progressbar', { name: 'Pergunta 1 de 30' })).toBeInTheDocument()
   })
 
-  it('abre a rota administrativa fixa diretamente', () => {
+  it('abre a rota administrativa fixa com a metodologia completa', () => {
     window.history.replaceState({}, '', '/resultados-metodologia')
     render(<App />)
     expect(screen.getByRole('heading', { name: 'Entenda todos os resultados possíveis.' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Quatro níveis de leitura' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Como ler cada competência' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Como o cálculo funciona' })).toBeInTheDocument()
   })
 
   it('recusa um caminho opaco compartilhado em outra sessão', () => {

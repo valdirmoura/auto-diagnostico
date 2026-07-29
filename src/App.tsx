@@ -218,20 +218,20 @@ function Result({ answers, onRestart, onLearn }: { answers: Answers; onRestart: 
 
         <button className="button button--quiet" onClick={onRestart}>Refazer avaliação</button>
       </section>
-      <div className="result-disclaimer"><PrivacyNote /><div><p>Este autodiagnóstico apoia reflexão e desenvolvimento pessoal. Não constitui avaliação clínica ou psicológica.</p><IndependenceNote /><button className="footer-methodology-link no-print" onClick={onLearn}>Entenda todos os resultados</button></div></div>
+      <div className="result-disclaimer"><PrivacyNote /><div><p>Este autodiagnóstico apoia reflexão e desenvolvimento pessoal. Não constitui avaliação clínica ou psicológica.</p><IndependenceNote /><button className="footer-methodology-link no-print" onClick={onLearn}>Entenda sua pontuação</button></div></div>
     </main>
   )
 }
 
-function Learn({ onBack, onStart }: { onBack: () => void; onStart: () => void }) {
+function Learn({ onBack, onStart, full = false }: { onBack: () => void; onStart: () => void; full?: boolean }) {
   const bands: BandKey[] = ['priority', 'developing', 'consistent', 'consolidated']
   const ranges: Record<BandKey, string> = { priority: '5–9', developing: '10–14', consistent: '15–19', consolidated: '20–25' }
   return (
     <main className="learn-page page-enter">
       <section className="learn-hero">
         <button className="back-link back-link--light no-print" onClick={onBack}>← Voltar</button>
-        <span className="eyebrow eyebrow--light">Guia de interpretação</span>
-        <h1>Entenda todos os resultados possíveis.</h1>
+        <span className="eyebrow eyebrow--light">{full ? 'Guia de interpretação' : 'Sua pontuação'}</span>
+        <h1>{full ? 'Entenda todos os resultados possíveis.' : 'Entenda sua pontuação geral.'}</h1>
         <p>A pontuação organiza tendências em faixas para apoiar reflexão. Ela não define quem você é nem substitui uma avaliação profissional.</p><IndependenceNote />
       </section>
       <div className="learn-content">
@@ -241,6 +241,7 @@ function Learn({ onBack, onStart }: { onBack: () => void; onStart: () => void })
             {levelRanges.map((level) => <article key={level.level}><span className="level-number">0{level.level}</span><span className="range">{level.range} pontos</span><h3>{level.title}</h3><p>{level.description}</p><strong>Focos possíveis</strong><ul>{level.focus.map((focus) => <li key={focus}>{focus}</li>)}</ul></article>)}
           </div>
         </section>
+        {full && <>
         <section className="method-section">
           <div className="section-heading"><div><span className="eyebrow">Cinco dimensões</span><h2>Como ler cada competência</h2></div><p>Cada dimensão varia de 5 a 25 pontos. Faixas iguais ganham significados próprios conforme a competência.</p></div>
           {blocks.map((block, index) => (
@@ -255,6 +256,7 @@ function Learn({ onBack, onStart }: { onBack: () => void; onStart: () => void })
           <div><p>Cada resposta vale de 1 (“Nunca”) a 5 (“Quase sempre”). Cinco questões finais são redigidas no sentido inverso e têm a pontuação convertida: 1 vale 5, 2 vale 4, 3 permanece 3, 4 vale 2 e 5 vale 1.</p><p>Essa inversão reduz respostas automáticas. Ela participa apenas do resultado geral e não aparece como uma sexta competência.</p></div>
         </section>
         <section className="learn-cta no-print"><h2>Pronto para fazer sua leitura?</h2><button className="button button--primary" onClick={onStart}>Iniciar autodiagnóstico →</button></section>
+        </>}
       </div>
     </main>
   )
@@ -336,7 +338,7 @@ export default function App() {
       {screen === 'home' && <Home onStart={() => setScreen('instructions')} />}
       {screen === 'instructions' && <Instructions onBack={() => setScreen('home')} onStart={() => setScreen('assessment')} />}
       {screen === 'result' && <Result answers={answers} onRestart={reset} onLearn={openMethodology} />}
-      {screen === 'learn' && <Learn onBack={() => setScreen(hasCompletedAssessment ? 'result' : 'home')} onStart={() => setScreen('instructions')} />}
+      {screen === 'learn' && <Learn onBack={() => setScreen(hasCompletedAssessment ? 'result' : 'home')} onStart={() => setScreen('instructions')} full={window.location.pathname === ADMIN_METHODOLOGY_PATH} />}
     </Shell>
   )
 }
