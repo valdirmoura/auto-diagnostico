@@ -45,19 +45,18 @@ function IndependenceNote() {
   return <p className="independence-note">Instrumento independente, elaborado para fins educativos e de reflexão. Não afiliado a autores, editoras ou metodologias comerciais.</p>
 }
 
-function Shell({ children, onHome, onLearn }: { children: React.ReactNode; onHome: () => void; onLearn?: () => void }) {
+function Shell({ children, onHome }: { children: React.ReactNode; onHome: () => void }) {
   return (
     <div className="app-shell">
       <header className="site-header no-print">
         <button className="logo-button" onClick={onHome} aria-label="Ir para o início"><Logo /></button>
-        {onLearn && <button className="text-link" onClick={onLearn}>Entenda os resultados</button>}
       </header>
       {children}
     </div>
   )
 }
 
-function Home({ onStart, onLearn }: { onStart: () => void; onLearn: () => void }) {
+function Home({ onStart }: { onStart: () => void }) {
   return (
     <main className="home">
       <section className="hero">
@@ -67,7 +66,7 @@ function Home({ onStart, onLearn }: { onStart: () => void; onLearn: () => void }
           <p className="hero__lead">Um autodiagnóstico para compreender como você reage diante de desafios, conflitos, pressão e relacionamentos profissionais.</p>
           <div className="hero__actions">
             <button className="button button--primary" onClick={onStart}>Iniciar autodiagnóstico <span aria-hidden="true">→</span></button>
-            <button className="button button--quiet" onClick={onLearn}>Entender os resultados</button>
+
           </div>
           <div className="facts" aria-label="Informações da avaliação">
             <span><b>30</b> afirmações</span><span><b>≈ 5</b> minutos</span><span><b>0</b> dados solicitados</span>
@@ -216,10 +215,10 @@ function Result({ answers, onRestart, onLearn }: { answers: Answers; onRestart: 
 
       <section className="result-actions no-print">
         <button className="button button--primary" onClick={() => window.print()}>Imprimir ou salvar em PDF</button>
-        <button className="button button--secondary" onClick={onLearn}>Entender todos os resultados</button>
+
         <button className="button button--quiet" onClick={onRestart}>Refazer avaliação</button>
       </section>
-      <div className="result-disclaimer"><PrivacyNote /><div><p>Este autodiagnóstico apoia reflexão e desenvolvimento pessoal. Não constitui avaliação clínica ou psicológica.</p><IndependenceNote /></div></div>
+      <div className="result-disclaimer"><PrivacyNote /><div><p>Este autodiagnóstico apoia reflexão e desenvolvimento pessoal. Não constitui avaliação clínica ou psicológica.</p><IndependenceNote /><button className="footer-methodology-link no-print" onClick={onLearn}>Entenda todos os resultados</button></div></div>
     </main>
   )
 }
@@ -261,43 +260,83 @@ function Learn({ onBack, onStart }: { onBack: () => void; onStart: () => void })
   )
 }
 
-export default function App() {
-  const route = window.location.pathname === '/resultados' ? 'learn' : 'home'
-  const [screen, setScreenState] = useState<Screen>(route)
-  const [answers, setAnswers] = useState<Answers>({})
+const ADMIN_METHODOLOGY_PATH = '/resultados-metodologia'
 
-  const setScreen = (next: Screen) => {
+function tokenFromPath(pathname: string) {
+  return pathname.startsWith('/r/') ? pathname.slice(3) : null
+}
+
+export default function App() {
+  const initialPath = useRef(window.location.pathname).current
+  const initialScreen: Screen = initialPath === ADMIN_METHODOLOGY_PATH ? 'learn' : 'home'
+  const [screen, setScreenState] = useState<Screen>(initialScreen)
+  const [answers, setAnswers] = useState<Answers>({})
+  const [methodologyToken, setMethodologyToken] = useState<string | null>(null)
+
+  const hasCompletedAssessment = Object.keys(answers).length === questions.length
+
+  const setScreen = (next: Screen, path = '/') => {
     setScreenState(next)
-    const path = next === 'learn' ? '/resultados' : '/'
     window.history.pushState({ screen: next }, '', path)
     window.scrollTo({ top: 0, behavior: 'instant' })
   }
 
   useEffect(() => {
-    window.history.replaceState({ screen: route }, '', window.location.pathname)
-    const navigate = (event: PopStateEvent) => {
-      const next = event.state?.screen ?? (window.location.pathname === '/resultados' ? 'learn' : 'home')
-      setScreenState(next)
+    if (tokenFromPath(initialPath)) {
+      window.history.replaceState({ screen: 'home' }, '', '/')
+      setScreenState('home')
+      return
     }
+
+    window.history.replaceState({ screen: initialScreen }, '', initialPath)
+  }, [initialPath, initialScreen])
+
+  useEffect(() => {
+    const navigate = (event: PopStateEvent) => {
+      const pathname = window.location.pathname
+      const token = tokenFromPath(pathname)
+      const mayViewMethodology = pathname === ADMIN_METHODOLOGY_PATH
+        || (Boolean(token) && token === methodologyToken && hasCompletedAssessment)
+      const requestedScreen = event.state?.screen as Screen | undefined
+
+      if ((requestedScreen === 'learn' || token) && !mayViewMethodology) {
+        window.history.replaceState({ screen: 'home' }, '', '/')
+        setScreenState('home')
+        return
+      }
+
+      setScreenState(requestedScreen ?? (pathname === ADMIN_METHODOLOGY_PATH ? 'learn' : 'home'))
+    }
+
     window.addEventListener('popstate', navigate)
     return () => window.removeEventListener('popstate', navigate)
-  }, [route])
+  }, [hasCompletedAssessment, methodologyToken])
+
+  const finishAssessment = () => {
+    setMethodologyToken(window.crypto.randomUUID())
+    setScreen('result')
+  }
+
+  const openMethodology = () => {
+    if (!methodologyToken || !hasCompletedAssessment) return
+    setScreen('learn', `/r/${methodologyToken}`)
+  }
 
   const reset = () => {
     if (Object.keys(answers).length > 0 && !window.confirm('Refazer a avaliação apagará todas as respostas desta sessão. Deseja continuar?')) return
     setAnswers({})
+    setMethodologyToken(null)
     setScreen('home')
   }
 
-  if (screen === 'assessment') return <Assessment answers={answers} setAnswers={setAnswers} onFinish={() => setScreen('result')} onExit={reset} />
+  if (screen === 'assessment') return <Assessment answers={answers} setAnswers={setAnswers} onFinish={finishAssessment} onExit={reset} />
 
   return (
-    <Shell onHome={reset} onLearn={screen === 'learn' ? undefined : () => setScreen('learn')}>
-      {screen === 'home' && <Home onStart={() => setScreen('instructions')} onLearn={() => setScreen('learn')} />}
+    <Shell onHome={reset}>
+      {screen === 'home' && <Home onStart={() => setScreen('instructions')} />}
       {screen === 'instructions' && <Instructions onBack={() => setScreen('home')} onStart={() => setScreen('assessment')} />}
-      {screen === 'result' && <Result answers={answers} onRestart={reset} onLearn={() => setScreen('learn')} />}
-      {screen === 'learn' && <Learn onBack={() => setScreen(Object.keys(answers).length === questions.length ? 'result' : 'home')} onStart={() => setScreen('instructions')} />}
+      {screen === 'result' && <Result answers={answers} onRestart={reset} onLearn={openMethodology} />}
+      {screen === 'learn' && <Learn onBack={() => setScreen(hasCompletedAssessment ? 'result' : 'home')} onStart={() => setScreen('instructions')} />}
     </Shell>
   )
 }
-
